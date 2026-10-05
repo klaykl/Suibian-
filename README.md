@@ -1,24 +1,36 @@
-# SuiBian（随辩）
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-**SuiBian（随辩）** is an online debate and discussion platform designed to bring different perspectives together.
+## Getting Started
 
-Inspired by community-driven platforms such as Zhihu, SuiBian allows users to explore a wide range of debate topics covering society, technology, economics, education, relationships, culture, and everyday life.
+First, run the development server:
 
-Each debate topic presents multiple perspectives and arguments, allowing users to read different viewpoints, compare reasoning, and participate in discussions rather than being limited to a single answer.
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-## What You Can Do
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-- 🔍 Explore hundreds of debate topics across different categories
-- 💬 Read arguments and opinions from multiple perspectives
-- ⚖️ Compare opposing viewpoints on the same question
-- ✍️ Share your own arguments and ideas
-- 🗣️ Discuss and respond to other users' perspectives
-- 🌏 Discover how different people think about the same issue
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## Our Idea
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-There is rarely only one way to understand a question.
+## Learn More
 
-SuiBian aims to create an open space where different opinions can coexist, collide, and inspire better thinking.
+To learn more about Next.js, take a look at the following resources:
 
-**See the question. Hear both sides. Think for yourself.**
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

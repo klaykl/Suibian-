@@ -1,0 +1,246 @@
+const { createClient } = require('@supabase/supabase-js')
+
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+}
+const { Pool } = require('pg')
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+)
+
+const pool = new Pool({
+  connectionString: 'postgresql://postgres:Wkl060816yyds@db.dilacmimmsxosimmkcly.supabase.co:5432/postgres',
+  ssl: { rejectUnauthorized: false },
+})
+
+const SEED_USERS = [
+  { email: 'alex.chen@seed.local', username: 'AlexChen', password: 'Seed123456!' },
+  { email: 'sarah.johnson@seed.local', username: 'SarahJ', password: 'Seed123456!' },
+  { email: 'mike.wilson@seed.local', username: 'MikeW', password: 'Seed123456!' },
+  { email: 'emma.davis@seed.local', username: 'EmmaD', password: 'Seed123456!' },
+  { email: 'james.liu@seed.local', username: 'JamesLiu', password: 'Seed123456!' },
+  { email: 'lisa.wang@seed.local', username: 'LisaWang', password: 'Seed123456!' },
+  { email: 'ryan.park@seed.local', username: 'RyanPark', password: 'Seed123456!' },
+  { email: 'olivia.brown@seed.local', username: 'OliviaB', password: 'Seed123456!' },
+  { email: 'daniel.kim@seed.local', username: 'DanielK', password: 'Seed123456!' },
+  { email: 'sophia.lee@seed.local', username: 'SophiaL', password: 'Seed123456!' },
+  { email: 'noah.taylor@seed.local', username: 'NoahT', password: 'Seed123456!' },
+  { email: 'mia.garcia@seed.local', username: 'MiaG', password: 'Seed123456!' },
+]
+
+// Comments by topic — diverse voices, lengths, and angles
+const COMMENTS = [
+  // Topic 0: AI 取代程序员
+  [
+    { body: '我用了整整两年 Copilot，再换成 Cursor。说实话，写代码的速度提升了不止一倍。但问题在于：写代码快不等于写好代码。AI 生成的都是「看起来对」的方案，真正遇到边界条件就露馅了。我觉得它会取代最底层的码农，但你得先是一个好的工程师才能驾驭它。', side: 'for' },
+    { body: '编程的本质不是敲键盘，而是把模糊的需求翻译成精确的逻辑。这件事 AI 目前做不到——不是技术问题，是人类的语言本身就是模糊的。甲方自己都不知道自己想要什么，你指望 AI 猜？', side: 'against' },
+    { body: '我是一家小公司的技术合伙人。以前一个项目配三个初级开发，现在一个资深开发加 AI，产出一样但成本砍了一半。我也不想这样，但这是商业现实。', side: 'for' },
+    { body: '换个角度想：如果 AI 真的能替代程序员，那它应该先替代产品经理才对——需求写得那么烂，AI 也救不了。', side: 'against' },
+    { body: '我自己是从培训班出来的，刚入行两年。说实话我现在写代码 70% 靠 AI。但这让我更害怕还是更兴奋？我觉得是兴奋。因为我不用再花时间在那些机械的 CRUD 上了，可以把精力放在理解业务上。', side: 'for' },
+    { body: '我面试了不少应届生，GitHub 全是 AI 生成的代码，问原理就答不上来。AI 让入门变得太容易了，但深度反而更难获得。那些靠抄 AI 入行的人，三年后会发现自己什么都没学到。', side: 'against' },
+    { body: '每次技术革命都有人说「这次不一样」。蒸汽机取代了体力劳动，但创造了工程师这个职业。AI 编程工具取代了重复性编码，但会让真正的软件设计能力更加值钱。恐慌是因为我们习惯了靠写 CRUD 赚钱。', side: 'for' },
+    { body: '作为一个做了十年软件的人，我觉得真正该担心的是另一个问题：如果所有初级岗位都消失了，未来的高级工程师从哪里来？你不能跳过生长过程直接收获果实。', side: 'against' },
+    { body: 'AI 不会取代程序员。但它会把程序员的门槛提高到前所未有的高度。以前你会写个 React 组件就能找到工作，现在你需要理解系统设计、性能优化、业务建模。这不是取代，是升级。', side: 'for' },
+    { body: '你们说的都对，但忽略了一个简单的事实：绝大多数公司连自己的需求都搞不清楚，他们需要的不是一个超级 AI，而是一个能帮他们理清思路的人。这就是程序员的价值。', side: 'against' },
+    { body: '我去年让公司里完全不懂代码的运营同事试着用 AI 搭了个数据看板。他真的做出来了。虽然很简陋，但能用。这件事让我彻底改变了看法：五年前我绝对不信，现在我觉得这是趋势。', side: 'for' },
+    { body: '说到底，会恐慌的都是做机械劳动的。如果你每天的代码都是不用动脑子的增删改查，那你确实该担心。如果你在解决真正困难的问题，AI 只是你的工具。工具从来不会取代手艺人。', side: 'against' },
+  ],
+  // Topic 1: 大学文凭
+  [
+    { body: '大三退学创业，现在公司 20 个人。面试的时候从来没人问过我学历，问的都是我做过什么。大学文凭的信号价值在被实际能力快速替代。', side: 'for' },
+    { body: '我承认自学可以学到所有知识。但大学给了我两样自学给不了的东西：一是认识了一群志同道合的人，二是被迫学了一些我当时觉得没用、后来发现至关重要的课程。', side: 'against' },
+    { body: '学费四年花了家里二十多万，出来工资八千。同期培训班出来的同学三个月就找到了一万五的工作。从纯经济角度，这不是投资，是消费——而且是性价比很低的消费。', side: 'for' },
+    { body: '大学教的不是技能，是思维方式。我这四年最大的收获不是任何一门课的成绩，而是学会了如何快速学习一个全新领域。这个能力让我在每一份工作中都比同事更快上手。', side: 'against' },
+    { body: '关键是看你去什么大学、学什么专业。985 的计算机和普通二本的工商管理是两个完全不同的产品。说「大学值不值」太笼统了。', side: 'for' },
+    { body: '我招人的时候不看学历栏。但是坦白说，有计算机科学基础的人——不管这个基础是自学还是大学学的——在工作中确实表现更好。问题不是学历，是基础。', side: 'against' },
+    { body: '现在网上的免费资源比任何一所大学图书馆都丰富。MIT 的课你都能在网上免费看。问题不是资源够不够，是你有没有那个自律去学。大学只是用学费和制度强行给了你一个学习框架。', side: 'for' },
+    { body: '我们公司最近招的两个人，一个名校毕业，一个自学成才。两个都很优秀。区别在于名校那位花了四年和四十万，自学那位花了两年和三千块买网课。ROI 的差距太大了。', side: 'for' },
+    { body: '大学在变化。我看到越来越多的学校开始做项目制教学、企业合作、更短的课程。那些拥抱变化的大学会继续有价值，那些守着二十年前教学大纲的确实不如自学。', side: 'against' },
+    { body: '我最反感的是把「大学有没有用」简化成「能不能帮你找到好工作」。教育本身有价值，思考本身有价值，接触多元思想的经历本身有价值。不是所有东西都要用工资来衡量。', side: 'against' },
+  ],
+  // Topic 2: 远程办公
+  [
+    { body: '远程三年，效率提升了至少 30%。不是因为我更努力了，而是因为没有人拍我肩膀打断我了。深度工作的状态能持续三四个小时不被破坏。', side: 'for' },
+    { body: '我试过一年远程，最后差点抑郁。我是一个需要和人面对面交流才能保持能量的人，天天对着屏幕开会让我觉得自己像一台机器。', side: 'against' },
+    { body: '远程最大的受益者不是程序员，是有孩子的人，是照顾老人的子女，是残疾人。远程工作让职场的公平性提升了一大截，这是效率之外更重要的价值。', side: 'for' },
+    { body: '我们团队做了一个内部实验，发现创新类项目的产出在远程后下降了将近一半。代码能远程写，但白板上的脑暴不行。Zoom 能传信息，传不了灵感。', side: 'against' },
+    { body: '新人是最吃亏的。以前坐在资深同事旁边，偷听他们讨论问题、调试 bug，不知不觉就学到了很多东西。现在这些全部消失了。你得主动约会议才能学到东西。', side: 'against' },
+    { body: '远程之后我们的招聘范围从「通勤范围内」变成了「地球上任何地方」。团队人才密度翻了一倍。以前因为地理位置放弃的候选人现在全都能招进来。', side: 'for' },
+    { body: '公司文化不会因为远程而死。坏的文化的确撑不住，但好的文化能适应。如果你的文化靠把人关在同一个房间里来维持，那本来就不是文化，是囚禁。', side: 'for' },
+    { body: '我们现在混合办公：周一周五远程，周二到周四在办公室。办公室日做协作和创新，远程日做深度工作。为什么要非此即彼？两种模式各有优势。', side: 'against' },
+    { body: '远程工作最大的隐形成本是「偶然的交流」。我们公司最好的一个产品想法来自工程师和设计师在茶水间的闲聊。这种事情在远程环境下几乎不可能发生。', side: 'against' },
+    { body: '反方老说新人成长问题，但我认为这是管理能力的问题而不是地点的问题。你有好的文档文化吗？有定期的 mentorship session 吗？有每季度的线下团建吗？做到这些，远程也能培养人。', side: 'for' },
+  ],
+  // Topic 3: 存钱 vs 体验
+  [
+    { body: '二十四岁那年花了八千块背包走东南亚三个月。十年后回头看，那是我花过最值得的一笔钱。那些经历塑造了我的世界观，影响了我后来每一个重大决定。', side: 'against' },
+    { body: '我们来算一笔简单的账：25 岁开始每月存两千，按年化 7% 算，到 60 岁是三百多万。35 岁开始同样的操作只能攒到一百万。这两百万的差距，你要用多少「体验」来换？', side: 'for' },
+    { body: '这种纯经济计算忽略了一个事实：25 岁在青旅遇到的各路人、获得的启发，和你 55 岁住五星级酒店完全是两种人生。有些窗户只在特定的年纪敞开。', side: 'against' },
+    { body: '我不觉得这是二选一的问题。存一半花一半，先存后花，量力而行。非要把「存钱」和「体验」对立起来，反而让人做出极端选择。', side: 'against' },
+    { body: '我选了存钱这条路。32 岁付清了房子首付，现在每个月没有租金压力。那些当年背包旅行的朋友现在都在焦虑地凑首付。财务安全本身也是一种体验——只是不发朋友圈。', side: 'for' },
+    { body: '我爸一辈子省吃俭用，47 岁查出癌症，半年就走了。他存了一辈子的钱，一天都没享受过。我不会犯这个错误。存够防线就行，剩下的，活着的时候花。', side: 'against' },
+    { body: '传统观点忽视了一个基本风险：你可能活不到退休。但你也很可能活到 95 岁然后没钱花。两边都是真实的可能性。但鼓励及时行乐的人从不提第二种情况。', side: 'for' },
+    { body: '体验不只是消费。那个 25 岁背包旅行的年轻人，在旅途中培养了跨文化沟通能力、适应力、社交能力，这些在他后来的职业生涯中持续产生回报。把它叫做消费是错误分类。', side: 'against' },
+  ],
+  // Topic 4: 互联网与极端化
+  [
+    { body: '我做了八年推荐算法。算法的目标从来不是让你生气，而是让你多停留。不幸的是，愤怒比理性的停留时间长了太多。不是算法变坏了，是我们对它的激励机制出了问题。', side: 'for' },
+    { body: '作为一个县城长大的孩子，互联网让我读到了最早的程序员博客、看到了斯坦福的公开课、了解了完全不同的生活方式。信息茧房当然存在，但墙是透明的——你愿意走出去，就能走出去。', side: 'against' },
+    { body: '真正的问题不是互联网，而是我们从来不教人怎么使用互联网。媒介素养应该像数学一样从小学起。没人告诉过你：算法的 KPI 是让你多刷，不是让你变聪明。', side: 'for' },
+    { body: '2015 年的微博还能看到有趣的争论。2026 年的微博就是两边互相喊话，没人真正在听。平台没有改变人性，它只是把你我本来的样子放大到了前所未有的尺度。', side: 'for' },
+    { body: '反过来想想：在互联网出现之前，大多数人的信息源就是三五个电视台和一份本地报纸。那真的是更「多元」的信息环境吗？只是那时候的单一你没意识到而已。', side: 'against' },
+    { body: '我做过一个实验：注册两个新号，一个关注温和的声音，一个关注极端的声音。一周之内，极端那个账号收到的推荐内容是温和账号的五倍。系统不是中立的——它在主动奖励极化。', side: 'for' },
+    { body: '互联网没有让我们变极端。我们本来就是这样。它只是让极端变得可见、可量化。以前村里那个偏执的人只能自己闷着，现在他能找到一万个志同道合的人和一个播客。', side: 'for' },
+    { body: '这场讨论本身就是一个最好的反例。我们在认真地读正反方的观点，在思考，在犹豫要不要改立场。这就是互联网被正确使用时的样子。', side: 'against' },
+    { body: '我在这个话题上一年内改了三次立场。讽刺的是，这正是反方的证据：互联网是可以改变一个人的观点的——前提是你愿意被改变。', side: 'against' },
+  ],
+]
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+async function main() {
+  console.log('=== 创建种子用户 ===')
+  const userIds = []
+
+  for (const u of SEED_USERS) {
+    // Check if user exists
+    const { data: existing } = await supabase.auth.admin.listUsers()
+    const exists = existing.users.find(eu => eu.email === u.email)
+
+    if (exists) {
+      console.log(`  ⏭  ${u.username} (已存在)`)
+      userIds.push({ id: exists.id, username: u.username })
+    } else {
+      const { data: created, error } = await supabase.auth.admin.createUser({
+        email: u.email,
+        password: u.password,
+        email_confirm: true,
+        user_metadata: { username: u.username },
+      })
+      if (error) {
+        console.error(`  ❌ ${u.username}: ${error.message}`)
+      } else {
+        console.log(`  ✅ ${u.username}`)
+        userIds.push({ id: created.user.id, username: u.username })
+      }
+    }
+  }
+
+  // Also include the admin user
+  const adminId = '0afa1c35-f4dd-4035-a530-1d72a5c14b99'
+  userIds.push({ id: adminId, username: '管理员' })
+
+  console.log(`\n共 ${userIds.length} 个用户可用`)
+
+  // Get topics
+  const { rows: topics } = await pool.query(
+    "SELECT id, title FROM topics WHERE status = 'active' ORDER BY created_at"
+  )
+  console.log(`\n=== 处理 ${topics.length} 个话题 ===`)
+
+  // Clear existing seed affiliations and comments (keep admin's)
+  for (const u of userIds) {
+    if (u.id === adminId) continue // keep admin data
+    await pool.query('DELETE FROM upvotes WHERE user_id = $1', [u.id])
+    await pool.query('DELETE FROM affiliation_changes WHERE user_id = $1', [u.id])
+    await pool.query('DELETE FROM comments WHERE user_id = $1', [u.id])
+    await pool.query('DELETE FROM affiliations WHERE user_id = $1', [u.id])
+  }
+
+  for (let ti = 0; ti < topics.length; ti++) {
+    const topic = topics[ti]
+    console.log(`\n📌 ${topic.title}`)
+
+    // Assign affiliations: ~100 users, roughly 50/50 split
+    const seedUserIds = userIds.filter(u => u.id !== adminId)
+    const nAffiliations = Math.min(seedUserIds.length, 12)
+
+    // Randomly determine split (45-55 range)
+    const forCount = randInt(5, 7)
+    const againstCount = nAffiliations - forCount
+
+    const shuffled = shuffle(seedUserIds)
+    const forUsers = shuffled.slice(0, forCount)
+    const againstUsers = shuffled.slice(forCount, nAffiliations)
+
+    for (const u of forUsers) {
+      await pool.query(
+        `INSERT INTO affiliations (user_id, topic_id, side) VALUES ($1, $2, 'for')
+         ON CONFLICT (user_id, topic_id) DO UPDATE SET side = 'for'`,
+        [u.id, topic.id]
+      )
+    }
+    for (const u of againstUsers) {
+      await pool.query(
+        `INSERT INTO affiliations (user_id, topic_id, side) VALUES ($1, $2, 'against')
+         ON CONFLICT (user_id, topic_id) DO UPDATE SET side = 'against'`,
+        [u.id, topic.id]
+      )
+    }
+    console.log(`   ✅ 阵营: ${forCount} 正方, ${againstCount} 反方`)
+
+    // Add some affiliation changes
+    const switchers = shuffle(seedUserIds).slice(0, randInt(1, 3))
+    for (const u of switchers) {
+      const fromSide = Math.random() > 0.5 ? 'for' : 'against'
+      const toSide = fromSide === 'for' ? 'against' : 'for'
+
+      const { rows: aff } = await pool.query(
+        'SELECT id FROM affiliations WHERE user_id = $1 AND topic_id = $2',
+        [u.id, topic.id]
+      )
+      if (aff.length > 0) {
+        await pool.query(
+          `INSERT INTO affiliation_changes (affiliation_id, user_id, topic_id, from_side, to_side)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [aff[0].id, u.id, topic.id, fromSide, toSide]
+        )
+        await pool.query(
+          `UPDATE affiliations SET changed_at = NOW(), side = $1 WHERE id = $2`,
+          [toSide, aff[0].id]
+        )
+        console.log(`   🔄 ${u.username} 切换阵营: ${fromSide} → ${toSide}`)
+      }
+    }
+
+    // Add comments
+    const topicComments = COMMENTS[ti] || []
+    const commentUsers = shuffle(seedUserIds)
+    const nComments = Math.min(topicComments.length, commentUsers.length)
+
+    for (let ci = 0; ci < nComments; ci++) {
+      const c = topicComments[ci]
+      const u = commentUsers[ci]
+      const upvotes = randInt(3, 37)
+
+      await pool.query(
+        `INSERT INTO comments (topic_id, user_id, body, side_at_time, upvote_count)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [topic.id, u.id, c.body, c.side, upvotes]
+      )
+    }
+    console.log(`   💬 添加 ${nComments} 条评论`)
+  }
+
+  console.log('\n🎉 种子数据全部就绪！')
+  await pool.end()
+}
+
+main().catch((err) => {
+  console.error('❌', err.message)
+  process.exit(1)
+})

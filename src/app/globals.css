@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-brand: #2563EB;
+  --color-brand-light: #EFF6FF;
+  --color-brand-border: #BFDBFE;
+  --color-accent: #F59E0B;
+  --color-accent-light: #FEF3C7;
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-border: #F1F5F9;
+  --color-border-strong: #E2E8F0;
+  --color-text: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94A3B8;
+  --color-debate-for: #2563EB;
+  --color-debate-for-light: #EFF6FF;
+  --color-debate-against: #94A3B8;
+  --color-debate-against-light: #F8FAFC;
+  --color-debate-switch: #F59E0B;
+  --color-debate-switch-light: #FEF3C7;
+  --color-zhihu-blue: #2563EB;
+  --color-zhihu-blue-light: #EFF6FF;
+}
+
+body {
+  background: #F8FAFC;
+  color: #0F172A;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+.shadow-subtle { box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.animate-fade-in { animation: fadeIn 0.2s ease-out; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
